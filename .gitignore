@@ -1,0 +1,33 @@
+# Secrets
+.env
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Generated data
+data/raw/
+data/tmp/
+
+# Local datasets
+players_data-2025_2026.csv
+players_data_light-2025_2026.csv
+archive.zip
+
+# dbt
+dbt/target/
+dbt/logs/
+dbt_packages/
+
+# Logs
+*.log
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

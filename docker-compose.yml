@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: vinotinto-lab-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-vinotinto_lab}
+      POSTGRES_USER: ${POSTGRES_USER:-vinotinto}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vinotinto_lab_dev}
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - vinotinto_lab_pgdata:/var/lib/postgresql/data
+      - ./sql/001_init.sql:/docker-entrypoint-initdb.d/001_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-vinotinto} -d ${POSTGRES_DB:-vinotinto_lab}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  vinotinto_lab_pgdata:

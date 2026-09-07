@@ -1,0 +1,4 @@
+pandas>=3.0
+scikit-learn>=1.9
+psycopg[binary]>=3.3
+python-dotenv>=1.0

@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: vinotinto-lab
+Version: 0.2.0
+Summary: Sports data, analytics and machine-learning platform.
+Requires-Python: >=3.11
+Requires-Dist: pandas>=3.0
+Requires-Dist: scikit-learn>=1.9
+Requires-Dist: psycopg[binary]>=3.3
+Requires-Dist: python-dotenv>=1.0

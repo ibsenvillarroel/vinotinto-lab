@@ -48,6 +48,41 @@ services:
     profiles:
       - analytics
 
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: vinotinto-lab-api
+
+    command:
+      [
+        "uvicorn",
+        "vinotinto_lab.api.main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000",
+        "--reload"
+      ]
+
+    environment:
+      DB_HOST: postgres
+      POSTGRES_DB: ${POSTGRES_DB:-vinotinto_lab}
+      POSTGRES_USER: ${POSTGRES_USER:-vinotinto}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-vinotinto_lab_dev}
+      POSTGRES_PORT: "5432"
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+    ports:
+      - "8000:8000"
+
+    volumes:
+      - ./src:/app/src
+
 
 volumes:
   vinotinto_lab_pgdata:

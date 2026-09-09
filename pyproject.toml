@@ -17,5 +17,11 @@ dependencies = [
     "uvicorn[standard]>=0.35"
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.4",
+    "httpx>=0.28"
+]
+
 [tool.setuptools.packages.find]
 where = ["src"]

@@ -31,3 +31,6 @@ dbt_packages/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Python packaging metadata
+*.egg-info/

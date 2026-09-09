@@ -23,6 +23,25 @@ FEATURES = [
     "offsides_per90",
 ]
 
+class PlayerResolutionError(ValueError):
+    """Base error for canonical player resolution."""
+
+
+class PlayerNotFoundError(PlayerResolutionError):
+    """Raised when no canonical player matches the request."""
+
+
+class AmbiguousPlayerError(PlayerResolutionError):
+    """Raised when more than one canonical player matches."""
+
+
+class PlayerClubMismatchError(PlayerResolutionError):
+    """Raised when a player exists but not for the requested club."""
+
+
+class PlayerNotEligibleForSimilarityError(PlayerResolutionError):
+    """Raised when a player exists but is not eligible for similarity."""
+
 
 def load_players() -> pd.DataFrame:
     query = """
@@ -114,12 +133,12 @@ def resolve_target_player(
                 for row in suggestions.itertuples()
             )
 
-            raise ValueError(
+            raise PlayerNotFoundError(
                 f'Player "{player_name}" was not found exactly. '
                 f"Possible matches: {text}"
             )
 
-        raise ValueError(
+        raise PlayerNotFoundError(
             f'Player "{player_name}" was not found.'
         )
 
@@ -134,7 +153,7 @@ def resolve_target_player(
         ]
 
         if matches.empty:
-            raise ValueError(
+            raise PlayerClubMismatchError(
                 f'Player "{player_name}" was found, '
                 f'but not with primary club "{club}".'
             )
@@ -149,9 +168,9 @@ def resolve_target_player(
             for row in matches.itertuples()
         )
 
-        raise ValueError(
+        raise AmbiguousPlayerError(
             f'Multiple canonical players match "{player_name}". '
-            f"Use --club to disambiguate. "
+            f"Specify the club parameter. "
             f"Candidates: {candidates}"
         )
 

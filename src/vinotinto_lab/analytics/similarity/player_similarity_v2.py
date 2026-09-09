@@ -6,10 +6,14 @@ import pandas as pd
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.preprocessing import StandardScaler
 
+from vinotinto_lab.analytics.players.player_profile import (
+    resolve_player_profile,
+)
+
 from vinotinto_lab.analytics.similarity.player_similarity import (
     FEATURES,
+    PlayerNotEligibleForSimilarityError,
     load_players,
-    resolve_target_player,
 )
 
 
@@ -19,18 +23,30 @@ def find_similar_players_v2(
     club: str | None = None,
 ) -> tuple[pd.Series, pd.DataFrame]:
 
+    # Resolve against the complete canonical player population.
+    # This allows us to distinguish:
+    # - player does not exist
+    # - player exists but is not eligible for similarity
+    target = resolve_player_profile(
+        player_name=player_name,
+        club=club,
+    )
+
+    if not bool(target["is_similarity_eligible"]):
+        raise PlayerNotEligibleForSimilarityError(
+            f'Player "{target["player_name"]}" exists, '
+            f'but is not eligible for similarity analysis. '
+            f'Current minutes: {int(target["minutes"])}. '
+            f'Minimum required: 900.'
+        )
+
+    # Similarity population contains only eligible players.
     players = load_players()
 
     if players.empty:
         raise RuntimeError(
             "No eligible players were returned from PostgreSQL."
         )
-
-    target = resolve_target_player(
-        players=players,
-        player_name=player_name,
-        club=club,
-    )
 
     position_group = target["position_group"]
 

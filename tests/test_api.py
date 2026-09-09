@@ -69,6 +69,7 @@ def test_ambiguous_vitinha_requires_club() -> None:
     assert "Multiple canonical players" in detail
     assert "Genoa" in detail
     assert "Paris Saint-Germain" in detail
+    assert "Specify the club parameter" in detail
 
 
 def test_vitinha_psg_disambiguation() -> None:
@@ -103,3 +104,141 @@ def test_limit_validation() -> None:
     )
 
     assert response.status_code == 422
+
+def test_unknown_player_returns_404() -> None:
+    response = client.get(
+        "/players/Definitely Not A Real Player/similar"
+    )
+
+    assert response.status_code == 404
+
+    detail = response.json()["detail"]
+
+    assert "was not found" in detail
+
+def test_ineligible_player_profile_is_available() -> None:
+    response = client.get(
+        "/players/Kilian Fischer"
+    )
+
+    assert response.status_code == 200
+
+    payload = response.json()
+
+    assert payload["identity"]["name"] == "Kilian Fischer"
+
+    assert (
+        payload["season"]["primary_club"]
+        == "Wolfsburg"
+    )
+
+    assert payload["usage"]["minutes"] == 800
+
+    assert (
+        payload["data_quality"][
+            "similarity_eligible"
+        ]
+        is False
+    )
+
+    assert (
+        payload["data_quality"][
+            "sample_quality"
+        ]
+        == "LOW"
+    )
+
+
+def test_ineligible_player_similarity_returns_422() -> None:
+    response = client.get(
+        "/players/Kilian Fischer/similar"
+    )
+
+    assert response.status_code == 422
+
+    detail = response.json()["detail"]
+
+    assert "not eligible for similarity analysis" in detail
+    assert "Current minutes: 800" in detail
+    assert "Minimum required: 900" in detail
+
+def test_mbappe_player_profile() -> None:
+    response = client.get(
+        "/players/Kylian Mbappé"
+    )
+
+    assert response.status_code == 200
+
+    payload = response.json()
+
+    assert (
+        payload["identity"]["name"]
+        == "Kylian Mbappé"
+    )
+
+    assert (
+        payload["season"]["primary_club"]
+        == "Real Madrid"
+    )
+
+    assert (
+        payload["season"]["primary_competition"]
+        == "La Liga"
+    )
+
+    assert (
+        payload["role"]["position_group"]
+        == "FW"
+    )
+
+    assert (
+        payload["usage"]["minutes"]
+        == 2599
+    )
+
+    assert (
+        payload["production"]["goals"]
+        == 25
+    )
+
+    assert (
+        payload["data_quality"][
+            "similarity_eligible"
+        ]
+        is True
+    )
+
+    assert (
+        payload["data_quality"][
+            "sample_quality"
+        ]
+        == "HIGH"
+    )
+
+
+def test_ambiguous_vitinha_profile_requires_club() -> None:
+    response = client.get(
+        "/players/Vitinha"
+    )
+
+    assert response.status_code == 400
+
+    detail = response.json()["detail"]
+
+    assert "Multiple canonical players" in detail
+    assert "Genoa" in detail
+    assert "Paris Saint-Germain" in detail
+    assert "Specify the club parameter" in detail
+
+
+def test_unknown_player_profile_returns_404() -> None:
+    response = client.get(
+        "/players/Definitely Not A Real Player"
+    )
+
+    assert response.status_code == 404
+
+    assert (
+        "was not found"
+        in response.json()["detail"]
+    )

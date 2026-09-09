@@ -242,3 +242,122 @@ def test_unknown_player_profile_returns_404() -> None:
         "was not found"
         in response.json()["detail"]
     )
+
+def test_players_explorer_default_pagination() -> None:
+    response = client.get(
+        "/players",
+        params={
+            "limit": 5,
+        },
+    )
+
+    assert response.status_code == 200
+
+    payload = response.json()
+
+    assert payload["total"] > 0
+    assert payload["limit"] == 5
+    assert payload["offset"] == 0
+    assert len(payload["players"]) == 5
+
+
+def test_players_explorer_search_vini() -> None:
+    response = client.get(
+        "/players",
+        params={
+            "search": "Vini",
+            "limit": 20,
+        },
+    )
+
+    assert response.status_code == 200
+
+    payload = response.json()
+
+    assert payload["total"] > 0
+
+    names = [
+        player["name"]
+        for player in payload["players"]
+    ]
+
+    assert any(
+        "vini" in name.casefold()
+        for name in names
+    )
+
+
+def test_players_explorer_competition_and_position() -> None:
+    response = client.get(
+        "/players",
+        params={
+            "competition": "La Liga",
+            "position_group": "FW",
+            "limit": 20,
+        },
+    )
+
+    assert response.status_code == 200
+
+    payload = response.json()
+
+    assert payload["total"] > 0
+
+    for player in payload["players"]:
+        assert (
+            player["competition"]
+            == "La Liga"
+        )
+
+        assert (
+            player["position_group"]
+            == "FW"
+        )
+
+
+def test_players_explorer_similarity_eligible() -> None:
+    response = client.get(
+        "/players",
+        params={
+            "similarity_eligible": "true",
+            "min_minutes": 900,
+            "limit": 20,
+        },
+    )
+
+    assert response.status_code == 200
+
+    payload = response.json()
+
+    assert payload["total"] > 0
+
+    for player in payload["players"]:
+        assert (
+            player["similarity_eligible"]
+            is True
+        )
+
+        assert (
+            player["minutes"]
+            >= 900
+        )
+
+
+def test_players_explorer_validation() -> None:
+    response = client.get(
+        "/players",
+        params={
+            "limit": 101,
+        },
+    )
+
+    assert response.status_code == 422
+
+    response = client.get(
+        "/players",
+        params={
+            "offset": -1,
+        },
+    )
+
+    assert response.status_code == 422

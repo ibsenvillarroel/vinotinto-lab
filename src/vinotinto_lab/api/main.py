@@ -19,6 +19,10 @@ from vinotinto_lab.analytics.players.player_profile import (
     resolve_player_profile,
 )
 
+from vinotinto_lab.analytics.players.player_explorer import (
+    list_players,
+)
+
 
 app = FastAPI(
     title="Vinotinto Lab API",
@@ -355,3 +359,46 @@ def player_profile(
                 player["sample_quality"],
         },
     }
+
+@app.get("/players")
+def players_explorer(
+    search: str | None = Query(
+        default=None,
+    ),
+    competition: str | None = Query(
+        default=None,
+    ),
+    club: str | None = Query(
+        default=None,
+    ),
+    position_group: str | None = Query(
+        default=None,
+    ),
+    min_minutes: int | None = Query(
+        default=None,
+        ge=0,
+    ),
+    similarity_eligible: bool | None = Query(
+        default=None,
+    ),
+    limit: int = Query(
+        default=25,
+        ge=1,
+        le=100,
+    ),
+    offset: int = Query(
+        default=0,
+        ge=0,
+    ),
+) -> dict:
+
+    return list_players(
+        search=search,
+        competition=competition,
+        club=club,
+        position_group=position_group,
+        min_minutes=min_minutes,
+        similarity_eligible=similarity_eligible,
+        limit=limit,
+        offset=offset,
+    )
